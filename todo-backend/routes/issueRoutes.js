@@ -1,51 +1,31 @@
-// Importing the dependencies
 const express = require('express');
 const router = express.Router();
 const Issue = require('../models/Issue');
 
-// Create
-router.post('/', async (req, res) => {
-    try {
-        const newIssue = new Issue(req.body);
-        const savedIssue = await newIssue.save();
-        res.status(201).json(savedIssue);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// Read all
+// GET all issues
 router.get('/', async (req, res) => {
     try {
         const issues = await Issue.find();
         res.json(issues);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ message: err.message });
     }
 });
 
-// Update (including status)
-router.put('/:id', async (req, res) => {
+// POST a new issue
+router.post('/', async (req, res) => {
+    const issue = new Issue({
+        title: req.body.title,
+        description: req.body.description,
+        completed: req.body.completed || false
+    });
+
     try {
-        const updatedIssue = await Issue.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true }
-        );
-        res.json(updatedIssue);
+        const newIssue = await issue.save();
+        res.status(201).json(newIssue);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(400).json({ message: err.message });
     }
 });
 
-// Delete
-router.delete('/:id', async (req, res) => {
-    try {
-        await Issue.findByIdAndDelete(req.params.id);
-        res.json({ message: 'Issue Deleted' });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-module.exports = router; 
+module.exports = router;
